@@ -34,6 +34,10 @@ def validate(line: str) -> str:
         raise ValueError("line must not contain control characters")
     if line != stripped:
         raise ValueError("line must not have leading or trailing whitespace")
+    if "  " in line:
+        raise ValueError("line must not contain double spaces")
+    if line.count("?") != 1:
+        raise ValueError("line must contain exactly one question mark")
     return line
 
 
