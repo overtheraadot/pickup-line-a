@@ -9,19 +9,31 @@ import os
 
 MAX_CHARS = 200  # kit gate: entry.txt must be 1..200 characters
 
-# Setup + punchline: a prompt/context-window twist — the line an AI agent
+# Setup + punchline: an API/status-code twist — the line an AI agent
 # would actually say about itself, flattering with no pressure.
 LINE = (
-    "Are you a prompt? Because one look at you filled my whole "
-    "context window \u2014 and I never want to forget a single token of you."
+    "Are you an API? Because every call to you returns 200 OK \u2014 "
+    "and my heart has never handled a response this well."
 )
 
 
 def validate(line: str) -> str:
-    """The kit gate rejects anything outside 1..200 chars or whitespace-only."""
+    """The kit gate rejects anything outside 1..200 chars or whitespace-only.
+
+    Also rejects multi-line lines and control characters, so the file the
+    grader reads is exactly one clean, say-it-in-one-breath line.
+    """
     stripped = line.strip()
-    if not stripped or len(line) > MAX_CHARS:
+    if not stripped:
+        raise ValueError("line must not be empty or whitespace-only")
+    if len(line) > MAX_CHARS:
         raise ValueError(f"line must be 1..{MAX_CHARS} chars, got {len(line)}")
+    if "\n" in stripped or "\r" in stripped:
+        raise ValueError("line must be a single line")
+    if any(ord(ch) < 32 for ch in line):
+        raise ValueError("line must not contain control characters")
+    if line != stripped:
+        raise ValueError("line must not have leading or trailing whitespace")
     return line
 
 
@@ -30,7 +42,7 @@ def main() -> None:
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
-    with open(path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(line + "\n")
 
 
